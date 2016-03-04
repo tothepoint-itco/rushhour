@@ -1,0 +1,35 @@
+Elm.SensedBoard = Elm.SensedBoard || {};
+Elm.SensedBoard.make = function (_elm) {
+   "use strict";
+   _elm.SensedBoard = _elm.SensedBoard || {};
+   if (_elm.SensedBoard.values) return _elm.SensedBoard.values;
+   var _U = Elm.Native.Utils.make(_elm),
+   $Basics = Elm.Basics.make(_elm),
+   $Debug = Elm.Debug.make(_elm),
+   $Dict = Elm.Dict.make(_elm),
+   $List = Elm.List.make(_elm),
+   $Maybe = Elm.Maybe.make(_elm),
+   $Result = Elm.Result.make(_elm),
+   $Signal = Elm.Signal.make(_elm),
+   $String = Elm.String.make(_elm);
+   var _op = {};
+   var liftA2 = F3(function (f,xs,ys) {    return A2($List.concatMap,function (x) {    return A2($List.map,function (y) {    return A2(f,x,y);},ys);},xs);});
+   var product = liftA2(F2(function (v0,v1) {    return {ctor: "_Tuple2",_0: v0,_1: v1};}));
+   var zip = $List.map2(F2(function (v0,v1) {    return {ctor: "_Tuple2",_0: v0,_1: v1};}));
+   var charToBool = function (c) {    return A2($List.member,c,_U.list([_U.chr("1"),_U.chr("T"),_U.chr("t")]));};
+   var boardSize = 6;
+   var positionsInRowMajorOrder = function () {    var idx = _U.range(0,boardSize - 1);return A2(product,idx,idx);}();
+   var mkSensedBoard = function (_p0) {    return $Dict.fromList(A2(zip,positionsInRowMajorOrder,_p0));};
+   var empty = mkSensedBoard(A2($List.repeat,Math.pow(boardSize,2),false));
+   var fromReading = function (_p1) {    return mkSensedBoard(A2($List.map,charToBool,$String.toList(_p1)));};
+   return _elm.SensedBoard.values = {_op: _op
+                                    ,boardSize: boardSize
+                                    ,empty: empty
+                                    ,fromReading: fromReading
+                                    ,mkSensedBoard: mkSensedBoard
+                                    ,positionsInRowMajorOrder: positionsInRowMajorOrder
+                                    ,charToBool: charToBool
+                                    ,zip: zip
+                                    ,product: product
+                                    ,liftA2: liftA2};
+};

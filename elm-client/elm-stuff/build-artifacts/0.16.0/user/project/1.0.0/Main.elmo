@@ -1,0 +1,137 @@
+Elm.Main = Elm.Main || {};
+Elm.Main.make = function (_elm) {
+   "use strict";
+   _elm.Main = _elm.Main || {};
+   if (_elm.Main.values) return _elm.Main.values;
+   var _U = Elm.Native.Utils.make(_elm),
+   $Basics = Elm.Basics.make(_elm),
+   $Color = Elm.Color.make(_elm),
+   $Debug = Elm.Debug.make(_elm),
+   $Dict = Elm.Dict.make(_elm),
+   $Effects = Elm.Effects.make(_elm),
+   $Graphics$Collage = Elm.Graphics.Collage.make(_elm),
+   $Graphics$Element = Elm.Graphics.Element.make(_elm),
+   $Html = Elm.Html.make(_elm),
+   $Html$Attributes = Elm.Html.Attributes.make(_elm),
+   $List = Elm.List.make(_elm),
+   $Maybe = Elm.Maybe.make(_elm),
+   $Result = Elm.Result.make(_elm),
+   $SensedBoard = Elm.SensedBoard.make(_elm),
+   $Signal = Elm.Signal.make(_elm),
+   $SocketIO = Elm.SocketIO.make(_elm),
+   $StartApp = Elm.StartApp.make(_elm),
+   $Task = Elm.Task.make(_elm);
+   var _op = {};
+   var socketIOMailbox = $Signal.mailbox("");
+   var scaleElement = F2(function (scale,element) {
+      var singleton = function (a) {    return _U.list([a]);};
+      var _p0 = {ctor: "_Tuple2",_0: $Graphics$Element.widthOf(element),_1: $Graphics$Element.heightOf(element)};
+      var w = _p0._0;
+      var h = _p0._1;
+      var _p1 = {ctor: "_Tuple2",_0: $Basics.round($Basics.toFloat(w) * scale),_1: $Basics.round($Basics.toFloat(h) * scale)};
+      var w$ = _p1._0;
+      var h$ = _p1._1;
+      return A3($Graphics$Collage.collage,w$,h$,singleton(A2($Graphics$Collage.scale,scale,$Graphics$Collage.toForm(element))));
+   });
+   var cellSide = 25;
+   var boardSide = $SensedBoard.boardSize * cellSide;
+   var renderAt = F2(function (_p3,_p2) {
+      var _p4 = _p3;
+      var _p5 = _p2;
+      var y = ($SensedBoard.boardSize - _p4._0 - 1) * cellSide;
+      var x = _p4._1 * cellSide;
+      return $Graphics$Collage.move({ctor: "_Tuple2",_0: $Basics.toFloat(x) - (boardSide - _p5._0) / 2,_1: $Basics.toFloat(y) - (boardSide - _p5._1) / 2});
+   });
+   var renderClosedSwitchAt = function (cell) {
+      var radius = cellSide / 2.5;
+      return A3(renderAt,
+      cell,
+      {ctor: "_Tuple2",_0: cellSide,_1: cellSide},
+      A2($Graphics$Collage.outlined,$Graphics$Collage.solid($Color.black),$Graphics$Collage.circle(radius)));
+   };
+   var renderGrid = function (sensedBoard) {
+      return A3($Graphics$Collage.collage,
+      boardSide,
+      boardSide,
+      A2($List.map,
+      function (_p6) {
+         var _p7 = _p6;
+         return renderClosedSwitchAt(_p7._0);
+      },
+      A2($List.filter,function (_p8) {    var _p9 = _p8;return _p9._1;},$Dict.toList(sensedBoard))));
+   };
+   var renderHistory = function (history) {
+      var historyLine = function (_p10) {
+         var _p11 = _p10;
+         return _U.list([$Graphics$Element.show(A2($Basics._op["++"],
+                        "t",
+                        A2($Basics._op["++"],$Basics.toString(_p11._0),A2($Basics._op["++"]," - rawReading=",_p11._1._0))))
+                        ,A2(scaleElement,0.5,renderGrid(_p11._1._1))
+                        ,A2($Graphics$Element.spacer,10,10)]);
+      };
+      var withTimestamp = function (_p12) {
+         return $List.reverse(A2($List.indexedMap,F2(function (v0,v1) {    return {ctor: "_Tuple2",_0: v0,_1: v1};}),$List.reverse(_p12)));
+      };
+      var withSensedBoard = $List.map(function (rawReading) {    return {ctor: "_Tuple2",_0: rawReading,_1: $SensedBoard.fromReading(rawReading)};});
+      var history$ = withTimestamp(withSensedBoard(history));
+      return A2($Graphics$Element.flow,$Graphics$Element.down,A2($List.concatMap,historyLine,history$));
+   };
+   _op["=>"] = F2(function (v0,v1) {    return {ctor: "_Tuple2",_0: v0,_1: v1};});
+   var view = F2(function (address,model) {
+      return A2($Html.div,
+      _U.list([$Html$Attributes.style(_U.list([A2(_op["=>"],"padding","20px")]))]),
+      _U.list([A2($Html.div,
+              _U.list([$Html$Attributes.style(_U.list([A2(_op["=>"],"margin","auto"),A2(_op["=>"],"width","200px")]))]),
+              _U.list([$Html.fromElement(renderGrid(model.sensedBoard))]))
+              ,A2($Html.h1,_U.list([]),_U.list([$Html.text("History")]))
+              ,$Html.fromElement(renderHistory(model.history))]));
+   });
+   var update = F2(function (action,model) {
+      var _p13 = action;
+      switch (_p13.ctor)
+      {case "ConnectedToSerialPort": return {ctor: "_Tuple2",_0: model,_1: $Effects.none};
+         case "Received": var _p14 = _p13._0;
+           return {ctor: "_Tuple2"
+                  ,_0: _U.update(model,{rawReading: _p14,sensedBoard: $SensedBoard.fromReading(_p14),history: A2($List._op["::"],_p14,model.history)})
+                  ,_1: $Effects.none};
+         default: return {ctor: "_Tuple2",_0: model,_1: $Effects.none};}
+   });
+   var initModel = {rawReading: "",sensedBoard: $SensedBoard.empty,history: _U.list([])};
+   var Hint = {ctor: "Hint"};
+   var Received = function (a) {    return {ctor: "Received",_0: a};};
+   var inputs = _U.list([A2($Signal.map,Received,socketIOMailbox.signal)]);
+   var ConnectedToSerialPort = function (a) {    return {ctor: "ConnectedToSerialPort",_0: a};};
+   var Model = F3(function (a,b,c) {    return {rawReading: a,sensedBoard: b,history: c};});
+   var eventName = "";
+   var socketUrl = "http://localhost:8080";
+   var initEffects = $Effects.task(A2($Task.map,
+   $Basics.always(ConnectedToSerialPort(socketUrl)),
+   A2($Task.andThen,A2($SocketIO.io,socketUrl,$SocketIO.defaultOptions),A2($SocketIO.on,eventName,socketIOMailbox.address))));
+   var appConfig = {init: {ctor: "_Tuple2",_0: initModel,_1: initEffects},update: update,view: view,inputs: inputs};
+   var app = $StartApp.start(appConfig);
+   var main = app.html;
+   var tasks = Elm.Native.Task.make(_elm).performSignal("tasks",app.tasks);
+   return _elm.Main.values = {_op: _op
+                             ,socketUrl: socketUrl
+                             ,eventName: eventName
+                             ,Model: Model
+                             ,ConnectedToSerialPort: ConnectedToSerialPort
+                             ,Received: Received
+                             ,Hint: Hint
+                             ,initModel: initModel
+                             ,initEffects: initEffects
+                             ,update: update
+                             ,view: view
+                             ,cellSide: cellSide
+                             ,boardSide: boardSide
+                             ,renderAt: renderAt
+                             ,renderClosedSwitchAt: renderClosedSwitchAt
+                             ,renderGrid: renderGrid
+                             ,scaleElement: scaleElement
+                             ,renderHistory: renderHistory
+                             ,socketIOMailbox: socketIOMailbox
+                             ,inputs: inputs
+                             ,appConfig: appConfig
+                             ,app: app
+                             ,main: main};
+};
