@@ -1,0 +1,39 @@
+01 2 3 true 2
+02 1 2 false 2
+03 3 1 false 2
+06 5 2 true 2
+07 2 4 false 2
+08 5 4 true 2
+09 3 5 true 2
+10 1 5 false 2
+11 6 5 false 2
+13 4 1 true 3
+14 4 2 false 3
+15 2 6 true 3
+oplossing
+02 1 u
+09 1 r
+01 1 l
+03 3 d
+01 1 r
+02 1 d
+13 3 l
+14 1 u
+08 1 l
+11 2 u
+15 2 r
+03 1 d
+07 1 d
+09 1 r
+08 2 l
+14 2 d
+06 3 l
+11 2 u
+14 2 u
+08 3 r
+03 1 u
+07 1 u
+10 1 u
+15 3 l
+14 3 d
+01 3 r

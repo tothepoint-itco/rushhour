@@ -1,0 +1,5 @@
+01 2 3 true 2
+02 4 2 false 2
+13 3 1 true 3
+14 1 5 true 3
+15 4 5 true 3
